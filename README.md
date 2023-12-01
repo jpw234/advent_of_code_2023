@@ -12,3 +12,5 @@ For each day:
 - make `{entrypoint}.ml` in `dayX` folder
 - `dune build` in `dayX` folder
 - start developing in `{entrypoint}.ml` (hints will work in VSCode if you've installed the OCaml extension)
+- run program with `ocaml {entrypoint}.ml`
+  - NOTE: If using `str` library, need to explicitly link it by using `ocaml str.cma {entrypoint}.ml`
