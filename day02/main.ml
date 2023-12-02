@@ -31,20 +31,15 @@ let parseGame (str: string) : game =
   match String.split_on_char ':' str with
   | gameId :: pulls :: [] ->
     extractGameId gameId, (String.split_on_char ';' pulls |> List.map String.trim |> List.map extractPullResult)
-  | _ -> invalid_arg "invalid game string"
+  | _ -> invalid_arg ("invalid game string " ^ str)
 
-let data = open_in "input.txt"
-let rec read_lines i acc = match (try Some (input_line i) with End_of_file -> None) with Some str -> read_lines i (str :: acc) | None -> acc
-let lines = read_lines data []
-let () = close_in data
+let rec read_lines i acc = match (try Some (input_line i) with End_of_file -> None) with Some str -> read_lines i (str :: acc) | None -> close_in i; acc
+let lines: string list = read_lines (open_in "input.txt") []
 
 let games = List.map parseGame lines
 let validGames = List.filter (gameIsValid ((12, Red), (13, Green), (14, Blue))) games
-let validGameIdSum =
-  let gameSummer acc game = match game with (id, _) -> id + acc in
-  List.fold_left gameSummer 0 validGames
 
-let () = Printf.printf "Valid game id sum: %d" validGameIdSum
+let () = Printf.printf "Valid game id sum: %d" (List.fold_left (fun acc game -> match game with (id, _) -> id + acc) 0 validGames)
 (* part 1 solution above *)
 
 let minConstraint (gc: gameConstraint) (i: colorCount) : gameConstraint = match gc with
