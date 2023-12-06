@@ -24,12 +24,7 @@ let parseRow (row: int) (s: string) : (engineNumber list * engineSymbol list) =
           (sym, row, i) :: symL)
   in match (String.fold_left foldFn (0, "", [], []) s) with _, _, numL, symL -> numL, symL
 
-let collector (rows: (engineNumber list * engineSymbol list) list) : (engineNumber list * engineSymbol list) =
-  let foldFn (acc: engineNumber list * engineSymbol list) (r: engineNumber list * engineSymbol list) =
-    match (acc, r) with ((numL, symL), (rNumL, rSymL)) -> (numL @ rNumL), (symL @ rSymL)
-  in List.fold_left foldFn ([], []) rows
-
-let engineNumbers, engineSymbols = (lines |> List.mapi parseRow |> collector)
+let engineNumbers, engineSymbols = (lines |> List.mapi parseRow |> List.split |> fun k -> match k with (nl, sl) -> List.flatten nl, List.flatten sl)
 
 let isAdjacent (sym: engineSymbol) (num: engineNumber) : bool = match sym, num with
   (_, symRow, symIndex), (_, numRow, numStart, numEnd) ->
