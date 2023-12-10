@@ -72,10 +72,11 @@ let isInsideLoop (vMoves: (node * verticalMove) list) ((nx, ny): node) : bool = 
     match vMove with | Zero -> acc | HalfUp -> acc +. 0.5 | HalfDown -> acc -. 0.5 | FullUp -> acc +. 1. | FullDown -> acc -. 1.) 0. (* sum of vMoves to the right *)
   |> fun x -> ((int_of_float x) mod 2) != 0 (* true if sum vbars right of node is odd - alg to check if point is inside polygon *)
 
+let vMoves = extractor [] (startNode :: cycle)
 let numContainedPoints = graph
   |> NodeMap.bindings (* all nodes *)
   |> List.filter (fun (node, _) -> not (List.mem node (startNode :: cycle))) |> List.map fst (* filter for nodes not in the cycle *)
-  |> List.filter (isInsideLoop (extractor [] (startNode :: cycle)))
+  |> List.filter (isInsideLoop vMoves)
   |> List.length
 
 let () = Printf.printf "\n\nnum contained points = %d" numContainedPoints
