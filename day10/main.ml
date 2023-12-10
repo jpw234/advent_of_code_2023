@@ -51,3 +51,31 @@ let farthestNodeDistance = cycle
 
 let () = Printf.printf "farthest node distance: %d" farthestNodeDistance
 (* solution to part 1 above *)
+
+type verticalMove = Zero | HalfUp | HalfDown | FullUp | FullDown
+let helper (y1: int) (y2: int) (y3: int) : verticalMove =
+  if y1 < y2 then
+    if y2 < y3 then FullUp else HalfUp
+  else if y1 > y2 then
+    if y2 > y3 then FullDown else HalfDown
+  else
+    if y2 > y3 then HalfDown
+    else if y2 < y3 then HalfUp else Zero
+let rec extractor (acc: (node * verticalMove) list) (cycle: node list) : (node * verticalMove) list = match cycle with
+  | (_, y1) :: (x2, y2) :: (_, y3) :: _ -> extractor (((x2, y2), (helper y1 y2 y3)) :: acc) (List.tl cycle)
+  | (_, y1) :: (x2, y2) :: [] -> ((startX, startY), FullUp) (* hardcoded yikes *) :: (((x2, y2), (helper y1 y2 startY)) :: acc)
+  | _ -> invalid_arg "bad list input to extractor"
+
+let isInsideLoop (vMoves: (node * verticalMove) list) ((nx, ny): node) : bool = vMoves
+  |> List.filter (fun ((x, y), _) -> nx < x && ny = y) (* filter for vMoves to the right of the node *)
+  |> List.fold_left (fun acc (_, vMove) ->
+    match vMove with | Zero -> acc | HalfUp -> acc +. 0.5 | HalfDown -> acc -. 0.5 | FullUp -> acc +. 1. | FullDown -> acc -. 1.) 0. (* sum of vMoves to the right *)
+  |> fun x -> ((int_of_float x) mod 2) != 0 (* true if sum vbars right of node is odd - alg to check if point is inside polygon *)
+
+let numContainedPoints = graph
+  |> NodeMap.bindings (* all nodes *)
+  |> List.filter (fun (node, _) -> not (List.mem node (startNode :: cycle))) |> List.map fst (* filter for nodes not in the cycle *)
+  |> List.filter (isInsideLoop (extractor [] (startNode :: cycle)))
+  |> List.length
+
+let () = Printf.printf "\n\nnum contained points = %d" numContainedPoints
